@@ -55,6 +55,21 @@ abstract class AbstractTaskTests : AbstractFileTests() {
         } finally {
             File("temp.txt").delete()
         }
+        try {
+            sortAddresses("input/addr_in2.txt", "temp.txt")
+            assertFileContent("temp.txt",
+                    """
+                    НЕФТЯНИКОВ 53 - Сиб Азат
+                    НЕФТЯНИКОВ 231 - Сиб Азат
+                    Политехническая 9 - Петров Иван, Петров Йван
+                    Светлановский Проспект 3 - Лексей Корпенко
+                    Светлановский проспект 3 - Лексей Корпенко, Лексей корпенко
+                    Шолом-Алейхема-Карла-Маркса 1 - Вася Вася
+                """.trimIndent()
+            )
+        } finally {
+            File("temp.txt").delete()
+        }
     }
 
     private fun generateTemperatures(size: Int) {
