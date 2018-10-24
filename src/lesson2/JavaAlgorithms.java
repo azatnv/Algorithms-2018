@@ -176,6 +176,10 @@ public class JavaAlgorithms {
      * В файле буквы разделены пробелами, строки -- переносами строк.
      * Остальные символы ни в файле, ни в словах не допускаются.
      */
+
+    // Ресурсоемкость R = O(M*N)
+    // Трудоемкость T = O( sum(k*M*N*(M*N)^Ti) ), где Ti - коэффициент, который зависит от
+    // искомого слова i и от расположения букв в матрице. Для i = 1..words.size()
     static public Set<String> baldaSearcher(String inputName, Set<String> words) throws IOException {
         Scanner scanner1 = new Scanner(new FileReader(inputName));
         int column = 0;
@@ -184,8 +188,9 @@ public class JavaAlgorithms {
             column = scanner1.nextLine().length()/2 +1;
             raw++;
         }
+        scanner1.close();
         Scanner scanner2 = new Scanner(new FileReader(inputName));
-        Character[][] mat = new Character[raw][column];
+        Character[][] mat = new Character[raw][column];             //R=O(M*N), где M - высота матрицы, N - ширина
         Character symbol;
         int count = 0;
         while (scanner2.hasNext()) {
@@ -195,6 +200,7 @@ public class JavaAlgorithms {
                 count++;
             }
         }
+        scanner1.close();
         Graph graph = new Graph();
         for (int i = 0; i < raw; i++) {
             for (int k = 0; k < column; k++){
@@ -216,15 +222,21 @@ public class JavaAlgorithms {
             }
         }
         Set<String> result = new HashSet<>();
+        //k = words.size()- количество входных слов
+        //Функция поиска в ширину в худшем случае вызовется k*M*N раз
         for (String word: words) {
             List<Character> list = new ArrayList<>();
             for (Character character: word.toCharArray()) {
                 list.add(character);
             }
+            boolean flag = false;
             for (int i = 0; i < raw; i++) {
+                if (flag) break;
                 for (int k = 0; k < column; k++) {
                     if (graph.breadthFirstSearch(mat[i][k], k, i, list, new HashSet<>())) {
                         result.add(word);
+                        flag = true;
+                        break;
                     }
                 }
             }
@@ -316,9 +328,19 @@ public class JavaAlgorithms {
             Latter latter = vertices.get(new Point(x, y));
             return neighbors.get(latter);
         }
-
+        //   Количество рекурсивных вызовов этой функции во многом зависит от длины искомого слова
+        // и от того, как много мы сможем найти первых подходящих букв.
+        //   Рассмотрим худший случай: допустим нужно найти слово, состоящее чуть меньше чем из M*N букв.
+        // Тогда количество возможных "шажков" в среднем - 3, или 2, если находиться у края матирцы
+        // или рядом с двумя посещенными летками, или 1. Еще допустим, что при всех "шажках", кроме последнего,
+        // буквы в клетках матрицы совпадают с соответствующими буквами в слове, поэтому всего путей
+        // получилось 2^(M*N) (грубо).
+        //   Трудоемкость этой функции =O(2^(M*N)), но практически во всех случаях эта ситуация скорее всего
+        // невозможна (или полностью невозможна), поэтому трудоемкость в среднем должна быть на порядок меньше.
+        // А именно зависимость должна быть степенной =O((M*N)^Ti), где Ti - зависит от расположения букв в матрице
+        // и искомого слова i.
         boolean breadthFirstSearch(Character start, int startX, int startY,
-                                   List<Character> word, Set<Latter> visited) {   //МОжно сделать DEQUE вместо LIST
+                                   List<Character> word, Set<Latter> visited) {
             visited.add(new Latter(start, startX, startY));
             if (word.size() == 1 && start.equals(word.get(0))) return true;
             if (!start.equals(word.get(0))) return false;
