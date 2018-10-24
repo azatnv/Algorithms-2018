@@ -285,8 +285,13 @@ public class JavaAlgorithms {
             }
         }
 
-        private Map<Point, Latter> vertices = new HashMap<>();
-        private Map<Latter, HashSet<Latter>> neighbors = new HashMap<>();
+        Graph() {
+            vertices = new HashMap<>();
+            neighbors = new HashMap<>();
+        }
+
+        private Map<Point, Latter> vertices;
+        private Map<Latter, HashSet<Latter>> neighbors;
 
         void addLatter(Character name, int x, int y) {
             Point point = new Point(x, y);
