@@ -3,7 +3,9 @@ package lesson2;
 import kotlin.NotImplementedError;
 import kotlin.Pair;
 
-import java.util.Set;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public class JavaAlgorithms {
@@ -96,8 +98,42 @@ public class JavaAlgorithms {
      * Если имеется несколько самых длинных общих подстрок одной длины,
      * вернуть ту из них, которая встречается раньше в строке first.
      */
+//    Трудоемкость T=O(N*M), ресурсоемкость R=O(N*M). M и N - длины первой и второй стоки
     static public String longestCommonSubstring(String firs, String second) {
-        throw new NotImplementedError();
+        int[][] matrix = new int[second.length()][firs.length()];   //R=O(N*M)
+        char[] f = firs.toCharArray();
+        char[] s = second.toCharArray();
+        int max = 0;
+        int maxCol = -1;
+        for (int col= 0; col < f.length; col++) {                   //T=O(N*M)
+            for (int row = 0; row < s.length; row++) {
+                if (f[col]==s[row] && matrix[row][col]==0) {
+                    int count = 1;
+                    int col2 = col;
+                    int row2 = row;
+                    matrix[row2][col2] = count;
+                    while (true) {
+                        col2++;
+                        row2++;
+                        if (col2 < f.length && row2 < s.length && f[col2]==s[row2]) {
+                            matrix[row2][col2] = ++count;
+                        } else{
+                            if (matrix[row2-1][col2-1] > max) {
+                                max = matrix[row2-1][col2-1];
+                                maxCol = col2 - 1;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        StringBuilder str = new StringBuilder();
+        while (max >= 1) {
+            str.append(f[maxCol--]);
+            max--;
+        }
+        return str.reverse().toString();
     }
 
     /**
@@ -140,7 +176,156 @@ public class JavaAlgorithms {
      * В файле буквы разделены пробелами, строки -- переносами строк.
      * Остальные символы ни в файле, ни в словах не допускаются.
      */
-    static public Set<String> baldaSearcher(String inputName, Set<String> words) {
-        throw new NotImplementedError();
+    static public Set<String> baldaSearcher(String inputName, Set<String> words) throws IOException {
+        Scanner scanner1 = new Scanner(new FileReader(inputName));
+        int column = 0;
+        int raw = 0;
+        while (scanner1.hasNextLine()) {
+            column = scanner1.nextLine().length()/2 +1;
+            raw++;
+        }
+        Scanner scanner2 = new Scanner(new FileReader(inputName));
+        Character[][] mat = new Character[raw][column];
+        Character symbol;
+        int count = 0;
+        while (scanner2.hasNext()) {
+            symbol = scanner2.next().charAt(0);
+            if (!symbol.equals(' ') && !symbol.equals('\n')) {
+                mat[count / column][count % column] = symbol;
+                count++;
+            }
+        }
+        Graph graph = new Graph();
+        for (int i = 0; i < raw; i++) {
+            for (int k = 0; k < column; k++){
+                graph.addLatter(mat[i][k], k, i);
+            }
+        }
+        for (int i = 0; i < raw; i++) {
+            for (int k = 0; k < column; k++) {
+                for (int m = 1; m < 3; m++) {
+                    int checkX = k + (int) Math.pow(-1, m);
+                    if (checkX < column && checkX >= 0) {
+                        graph.connect(k, i, checkX, i);
+                    }
+                    int checkY = i + (int) Math.pow(-1, m);
+                    if (checkY < raw && checkY >= 0) {
+                        graph.connect(k, i, k, checkY);
+                    }
+                }
+            }
+        }
+        Set<String> result = new HashSet<>();
+        for (String word: words) {
+            List<Character> list = new ArrayList<>();
+            for (Character character: word.toCharArray()) {
+                list.add(character);
+            }
+            for (int i = 0; i < raw; i++) {
+                for (int k = 0; k < column; k++) {
+                    if (graph.breadthFirstSearch(mat[i][k], k, i, list, new HashSet<>())) {
+                        result.add(word);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private static class Graph {
+        class Latter {
+            private Character latter;
+            private Integer x;
+            private Integer y;
+            Latter(Character name, int xCor, int yCor) {
+                latter = name;
+                x = xCor;
+                y = yCor;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                return o instanceof Latter && x.equals(((Latter) o).x) && y.equals(((Latter) o).y)
+                        && latter.equals(((Latter) o).latter);
+            }
+            @Override
+            public String toString() {
+                return " " + latter + "[" + x + ";" + y + "] ";
+            }
+            @Override
+            public int hashCode(){
+                int result = 17;
+                result = 37 * result + x;
+                result = 37 * result + y;
+                result = 37 * result + (int) latter;
+                return result;
+            }
+        }
+        private class Point {
+            Integer x;
+            Integer y;
+            Point(int xCor, int yCor) {
+                x = xCor;
+                y = yCor;
+            }
+            @Override
+            public boolean equals(Object o) {
+                return o instanceof Point && x.equals(((Point) o).x) && y.equals(((Point) o).y);
+            }
+            @Override
+            public String toString() {
+                return " Point[" + x + ";" + y + "] ";
+            }
+            @Override
+            public int hashCode(){
+                int result = 17;
+                result = 37 * result + x;
+                result = 37 * result + y;
+                return result;
+            }
+        }
+
+        private Map<Point, Latter> vertices = new HashMap<>();
+        private Map<Latter, HashSet<Latter>> neighbors = new HashMap<>();
+
+        void addLatter(Character name, int x, int y) {
+            Point point = new Point(x, y);
+            Latter latter = new Latter(name, x, y);
+            vertices.put(point, latter);
+        }
+
+        void connect(int firX, int firY, int secX, int secY) {
+            Latter first = vertices.get(new Point(firX, firY));
+            Latter second = vertices.get(new Point(secX, secY));
+            if (!neighbors.containsKey(first)) {
+                neighbors.put(first, new HashSet<>());
+            }
+            if (!neighbors.containsKey(second)) {
+                neighbors.put(second, new HashSet<>());
+            }
+            neighbors.get(first).add(second);
+            neighbors.get(second).add(first);
+        }
+
+        Set<Latter> getNeighbors(int x, int y) {
+            Latter latter = vertices.get(new Point(x, y));
+            return neighbors.get(latter);
+        }
+
+        boolean breadthFirstSearch(Character start, int startX, int startY,
+                                   List<Character> word, Set<Latter> visited) {   //МОжно сделать DEQUE вместо LIST
+            visited.add(new Latter(start, startX, startY));
+            if (word.size() == 1 && start.equals(word.get(0))) return true;
+            if (!start.equals(word.get(0))) return false;
+            for (Latter lat: getNeighbors(startX,startY)) {
+                if (!word.get(1).equals(lat.latter) || visited.contains(lat)) continue;
+                boolean flag = breadthFirstSearch(lat.latter, lat.x, lat.y,
+                        word.subList(1, word.size()), visited);
+                if (flag) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

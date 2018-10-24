@@ -1,6 +1,7 @@
 package lesson1;
 
 import kotlin.NotImplementedError;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.*;
@@ -68,38 +69,52 @@ public class JavaTasks {
 
     //T = O(N*logN)-трудоемкость    R=O(N)-ресурсоемкость
     static public void sortAddresses(String inputName, String outputName) throws IOException {
-        Comparator<String> compareStreet = (street1, street2) -> {
-            String streetName1 = street1.split(" - ")[1].split(" \\d+")[0];
-            String streetName2 = street2.split(" - ")[1].split(" \\d+")[0];
-            Integer num1 = Integer.parseInt(street1.split(" ")[street1.split(" ").length-1]);
-            Integer num2 = Integer.parseInt(street2.split(" ")[street2.split(" ").length-1]);
-            String name1 = street1.split(" - ")[0];
-            String name2 = street2.split(" - ")[0];
-            if (streetName1.compareTo(streetName2) != 0) return streetName1.compareTo(streetName2);
-            else if (!num1.equals(num2)) return num1.compareTo(num2);
-            else return name1.compareTo(name2);
-        };
+        class Address implements Comparable<Address>{
+            private String nameStreet;
+            private Integer numberStreet;
+            private String namePerson;
+
+            private Address(String note) {
+                nameStreet = note.split(" - ")[1].split(" \\d+")[0];
+                numberStreet = Integer.parseInt(note.split(" ")[note.split(" ").length-1]);
+                namePerson = note.split(" - ")[0];
+            }
+
+            @Override
+            public int compareTo(@NotNull Address o) {
+                if (!this.nameStreet.equals(o.nameStreet))
+                    return this.nameStreet.compareTo(o.nameStreet);
+                else if (!this.numberStreet.equals(o.numberStreet))
+                    return this.numberStreet.compareTo(o.numberStreet);
+                else return this.namePerson.compareTo(o.namePerson);
+            }
+
+            private boolean equals(Address o) {
+                return this.namePerson.equals(o.namePerson) && this.nameStreet.equals(o.nameStreet) &&
+                        this.numberStreet.equals(o.numberStreet);
+            }
+        }
         String regex = "(?:[A-ZА-ЯЁa-zа-яё]+\\s){2}-\\s(?:[A-ZА-ЯЁa-zа-яё-]+\\s)+\\d+(\\n|$)";
         Scanner scanner = new Scanner(new FileReader(inputName));
-        TreeSet<String> relation = new TreeSet<>(compareStreet); //Ресурсоемкость R = O(N)
+        TreeSet<Address> streets = new TreeSet<>();              //Ресурсоемкость R = O(N)
         while (scanner.hasNextLine()) {                          //O(N*logN)
             String oneNote = scanner.nextLine();
             if (!oneNote.matches(regex)) throw new NotImplementedError();
-            relation.add(oneNote);                               //Вставка O(logN)
+            Address addressNote = new Address(oneNote);
+            streets.add(addressNote);                            //Вставка O(logN)
         }
         scanner.close();
-        String str = " ";
+        String sameStreet = " ";
         FileWriter wr = new FileWriter(new File(outputName));
-        wr.write(relation.first().split(" - ")[1] + " - " + relation.first().split(" - ")[0]);
-        for (String e: relation) {                               //O(N)
-            if (Objects.equals(e, relation.first())) {
-                str = e.split(" - ")[1];
+        wr.write(streets.first().nameStreet+" "+streets.first().numberStreet+" - "+streets.first().namePerson);
+        for (Address ad: streets) {
+            if (ad.equals(streets.first())) {
+                sameStreet = ad.nameStreet + ad.numberStreet;
                 continue;
             }
-            if (!Objects.equals(e.split(" - ")[1], str)) {
-                wr.write("\n" + e.split(" - ")[1] + " - " + e.split(" - ")[0]);
-            } else wr.write(", " + e.split(" - ")[0]);
-            str = e.split(" - ")[1];
+            if (sameStreet.equals(ad.nameStreet + ad.numberStreet)) wr.write(", " + ad.namePerson);
+            else wr.write("\n" + ad.nameStreet + " " + ad.numberStreet + " - " + ad.namePerson);
+            sameStreet = ad.nameStreet + ad.numberStreet;
         }
         wr.close();
     }
@@ -134,23 +149,24 @@ public class JavaTasks {
      * 99.5
      * 121.3
      */
-    //Трудоемкость T=O(N*logN), ресурсоемкость R=O(Т)
+    //Трудоемкость T=O(N), ресурсоемкость R=O(Т)
     static public void sortTemperatures(String inputName, String outputName) throws IOException {
         Scanner scanner = new Scanner(new FileReader(inputName));
-        List<Integer> list = new ArrayList<>();
+        List<Integer> list = new ArrayList<>();               //R=O(N)
         while (scanner.hasNextLine()) {
             list.add((int) (Double.parseDouble(scanner.nextLine())*10));
         }
         scanner.close();
-        int[] elements = new int[list.size()];
-        int k=0;
-        for (Integer integer: list) {
-            elements[k++] = integer;
+        int[] range = new int[2730+5000+1];
+        for (Integer num: list) {                             //T=O(N)
+            range[num + 2730]++;
         }
-        Sorts.mergeSort(elements);                                       //T = O(N*logN)
         FileWriter fileWriter = new FileWriter(new File(outputName));
-        for (int el: elements) {
-            fileWriter.write(((double) el)/10 + "\n");
+        for (int i=0; i<range.length; i++) {
+            while (range[i] > 0) {
+                fileWriter.write(((double) (i-2730)) / 10 + "\n");
+                range[i]--;
+            }
         }
         fileWriter.close();
     }

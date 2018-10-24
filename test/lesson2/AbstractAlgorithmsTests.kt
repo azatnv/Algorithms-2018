@@ -646,6 +646,22 @@ abstract class AbstractAlgorithmsTests {
 Еще старушка не забыла
                 """.trimIndent()
                 ))
+        assertEquals("\n\nПушкину\n\n" +
+                "Мечтая о могучем даре\n" +
+                "Того, кто русской стал судьбой,\n" +
+                "Стою я на Тверском бульваре,\n" +
+                "Стою и говорю с собой.\n" +
+                "\n" +
+                "Блондинистый, почти белесый,\n" +
+                "В легендах ставший как туман,\n" +
+                "О Александр! Ты был повеса,\n" +
+                "Как я сегодня хулиган.\n" +
+                "\n" +
+                "Но эти милые забавы\n" +
+                "Не затемнили образ твой,\n" +
+                "И в бронзе выкованной славы\n" +
+                "Трясешь ты гордой головой.\n", longestCommonSubstring(File("input/commSubst_in1.txt").readLines().joinToString("\n"),
+                File("input/commSubst_in2.txt").readLines().joinToString("\n")))
     }
 
     fun calcPrimesNumber(calcPrimesNumber: (Int) -> Int) {
@@ -675,5 +691,8 @@ abstract class AbstractAlgorithmsTests {
     fun baldaSearcher(baldaSearcher: (String, Set<String>) -> Set<String>) {
         assertEquals(setOf("ТРАВА", "КРАН", "АКВА", "НАРТЫ"),
                 baldaSearcher("input/balda_in1.txt", setOf("ТРАВА", "КРАН", "АКВА", "НАРТЫ", "РАК")))
+        assertEquals(setOf("ИКНТ", "КСПТ", "ГОРСТЬ", "КАРТЫ", "ЯЙЦО", "ВОЙ", "МАНТУ"),
+                baldaSearcher("input/balda_in2.txt", setOf("ИКНТ", "КСПТ", "АЛЛОЕ", "ГОРСТЬ",
+                        "КАРТЫ", "НАРТЫ", "ЯМАЙКА", "ЯЙЦО", "ВОЙ", "МАНТУ")))
     }
 }
