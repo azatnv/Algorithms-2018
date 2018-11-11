@@ -106,7 +106,10 @@ class BinaryTreeTest {
             val binaryIt = binarySet.iterator()
             println("Traversing $list")
             while (treeIt.hasNext()) {
-                assertEquals(treeIt.next(), binaryIt.next())
+                val tree = treeIt.next();
+                val bin = binaryIt.next();
+                System.out.print("$tree-$bin _ ")
+                assertEquals(tree, bin)
             }
         }
     }

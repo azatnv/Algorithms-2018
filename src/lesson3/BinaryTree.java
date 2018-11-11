@@ -17,6 +17,8 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
 
         Node<T> right = null;
 
+        Node<T> parent = null;
+
         Node(T value) {
             this.value = value;
         }
@@ -40,10 +42,12 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         else if (comparison < 0) {
             assert closest.left == null;
             closest.left = newNode;
+            newNode.parent = closest;
         }
         else {
             assert closest.right == null;
             closest.right = newNode;
+            newNode.parent = closest;
         }
         size++;
         return true;
@@ -66,8 +70,28 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
      */
     @Override
     public boolean remove(Object o) {
-        // TODO
-        throw new NotImplementedError();
+        @SuppressWarnings("unchecked")
+        T t = (T) o;
+        Node<T> removed = find(t);
+        if (removed == null) return false;
+        Node<T> right = removed.right;
+        Node<T> left = removed.left;
+        if (right != null) {
+            right.parent = removed.parent;
+            removed = right;
+            if (left != null) {
+                Node<T> closest = find(right, left.value);
+                left.parent = closest;
+                closest.left = left;
+            }
+        } else {
+            if (left != null) {
+                left.parent = removed.parent;
+                removed = left;
+            } else removed = null;
+        }
+        size--;
+        return true;
     }
 
     @Override
@@ -109,8 +133,31 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
          * Средняя
          */
         private Node<T> findNext() {
-            // TODO
-            throw new NotImplementedError();
+            if (current == null) {
+                Node<T> first = root;
+                while (first.left != null) {
+                    first = first.left;
+                }
+                return first;
+            } else {
+                if (current == root) {
+                    return current.right != null ? find(root.right, root.value) : null;
+                }
+                if (current.right != null) {
+                    return find(current.right, current.value);
+                } else {
+                    if (current == current.parent.left) {
+                        return current.parent;
+                    } else {
+                        Node<T> branch = current;
+                        while (branch.right == null) {
+                            if (branch == root) return null;
+                            branch = branch.parent;
+                        }
+                        return find(branch.right, branch.value);
+                    }
+                }
+            }
         }
 
         @Override
