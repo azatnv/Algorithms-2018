@@ -76,30 +76,34 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         if (removed == null) return false;
         Node<T> right = removed.right;
         Node<T> left = removed.left;
-        if (right != null) {
-            right.parent = removed.parent;
-            if (removed.parent.left != null && (removed.parent.left == removed))
-                removed.parent.left = right;
-            else removed.parent.right = right;
-            if (left != null) {
-                Node<T> closest = find(right, left.value);
-                left.parent = closest;
-                closest.left = left;
+        if (removed == root) {
+            if (size == 1) root = null;
+            else {
+                Node<T> moved = right != null ? right : left;
+                moved.parent = null;
+                root = moved;
+                if (right != null && left != null) rearrangeSmallerNodeToBiggerSubtree(left, moved);
             }
-        } else {
-            if (left != null) {
-                left.parent = removed.parent;
-                if (removed.parent.left != null && removed.parent.left == removed)
-                    removed.parent.left = left;
-                else removed.parent.right = left;
-            } else {
-                if (removed.parent.left != null && removed.parent.left == removed)
-                    removed.parent.left = null;
-                else removed.parent.right = null;
-            }
+        }
+        else if (right == null && left == null) {
+            if (removed.parent.left == removed) removed.parent.left = null;
+            else removed.parent.right = null;
+        }
+        else {
+            Node<T> moved = right != null ? right : left;
+            moved.parent = removed.parent;
+            if (removed.parent.left == removed) removed.parent.left = moved;
+            else removed.parent.right = moved;
+            if (left != null && right != null) rearrangeSmallerNodeToBiggerSubtree(left, moved);
         }
         size--;
         return true;
+    }
+
+    private void rearrangeSmallerNodeToBiggerSubtree(Node<T> node, Node<T> subtree) {
+        Node<T> closest = find(subtree, node.value);
+        node.parent = closest;
+        closest.left = node;
     }
 
     @Override
@@ -143,30 +147,33 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         private Node<T> findNext() {
             if (current == null) {
                 Node<T> first = root;
+                if (first == null) return null;
                 while (first.left != null) {
                     first = first.left;
                 }
                 return first;
-            } else {
-                if (current == root) {
-                    return current.right != null ? find(root.right, root.value) : null;
+            }
+            else if (current.parent == null && current.right == null) {
+                return null;
+            }
+            else if (current == root) {
+                return current.right != null ? find(root.right, root.value) : null;
+            }
+            else if (current.right != null) {
+                return find(current.right, current.value);
+            }
+            else if (current == current.parent.left) {
+                return current.parent;
+            }
+            else {
+                Node<T> branch = current;
+                Node<T> previous = current;
+                while (branch != root && branch.left != previous) {
+                    previous = branch;
+                    branch = branch.parent;
                 }
-                if (current.right != null) {
-                    return find(current.right, current.value);
-                } else {
-                    if (current == current.parent.left) {
-                        return current.parent;
-                    } else {
-                        Node<T> branch = current;
-                        Node<T> previous = current;
-                        while (branch != root && branch.left != previous) {
-                            previous = branch;
-                            branch = branch.parent;
-                        }
-                        if (branch == root && branch.left != previous) return null;
-                        return branch;
-                    }
-                }
+                if (branch == root && branch.left != previous) return null;
+                return branch;
             }
         }
 
@@ -188,8 +195,30 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
          */
         @Override
         public void remove() {
-            // TODO
-            throw new NotImplementedError();
+            if (current == null) throw new NoSuchElementException();
+            Node<T> right = current.right;
+            Node<T> left = current.left;
+            if (current == root) {
+                if (size == 1) root = null;
+                else {
+                    Node<T> moved = right != null ? right : left;
+                    moved.parent = null;
+                    root = moved;
+                    if (right != null && left != null) rearrangeSmallerNodeToBiggerSubtree(left, moved);
+                }
+            }
+            else if (right == null && left == null) {
+                if (current.parent.left == current) current.parent.left = null;
+                else current.parent.right = null;
+            }
+            else {
+                Node<T> moved = right != null ? right : left;
+                moved.parent = current.parent;
+                if (current.parent.left == current) current.parent.left = moved;
+                else current.parent.right = moved;
+                if (left != null && right != null) rearrangeSmallerNodeToBiggerSubtree(left, moved);
+            }
+            size--;
         }
     }
 
