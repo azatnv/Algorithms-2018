@@ -78,7 +78,9 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         Node<T> left = removed.left;
         if (right != null) {
             right.parent = removed.parent;
-            removed = right;
+            if (removed.parent.left != null && (removed.parent.left == removed))
+                removed.parent.left = right;
+            else removed.parent.right = right;
             if (left != null) {
                 Node<T> closest = find(right, left.value);
                 left.parent = closest;
@@ -87,8 +89,14 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         } else {
             if (left != null) {
                 left.parent = removed.parent;
-                removed = left;
-            } else removed = null;
+                if (removed.parent.left != null && removed.parent.left == removed)
+                    removed.parent.left = left;
+                else removed.parent.right = left;
+            } else {
+                if (removed.parent.left != null && removed.parent.left == removed)
+                    removed.parent.left = null;
+                else removed.parent.right = null;
+            }
         }
         size--;
         return true;
@@ -150,11 +158,13 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
                         return current.parent;
                     } else {
                         Node<T> branch = current;
-                        while (branch.right == null) {
-                            if (branch == root) return null;
+                        Node<T> previous = current;
+                        while (branch != root && branch.left != previous) {
+                            previous = branch;
                             branch = branch.parent;
                         }
-                        return find(branch.right, branch.value);
+                        if (branch == root && branch.left != previous) return null;
+                        return branch;
                     }
                 }
             }
