@@ -75,6 +75,27 @@ class BinaryTreeTest {
             }
             assertTrue(binarySet.checkInvariant())
         }
+        val matrix = listOf(listOf(10, 9, 8, 5, 1), listOf(10, 15, 5, 4, 6, 3, 7, 2, 8, 1, 9, 11, 16),
+                listOf(4, 7, 15, 10), listOf(40, 20, 30, 10), listOf(1, 2, 4, 8, 16))
+        for (list in matrix) {
+            val treeSet = TreeSet<Int>()
+            val binarySet = create()
+            for (element in list) {
+                treeSet += element
+                binarySet += element
+            }
+            println("Removing 10 from $list")
+            treeSet.remove(10)
+            binarySet.remove(10)
+            assertEquals<SortedSet<*>>(treeSet, binarySet, "After removal of 10 from $list")
+            assertEquals(treeSet.size, binarySet.size)
+            for (element in list) {
+                val inn = element != 10
+                assertEquals(inn, element in binarySet,
+                        "$element should be ${if (inn) "in" else "not in"} tree")
+            }
+            assertTrue(binarySet.checkInvariant())
+        }
     }
 
     @Test
@@ -96,6 +117,21 @@ class BinaryTreeTest {
             for (i in 1..20) {
                 list.add(random.nextInt(100))
             }
+            val treeSet = TreeSet<Int>()
+            val binarySet = create()
+            for (element in list) {
+                treeSet += element
+                binarySet += element
+            }
+            val treeIt = treeSet.iterator()
+            val binaryIt = binarySet.iterator()
+            println("Traversing $list")
+            while (treeIt.hasNext()) {
+                assertEquals(treeIt.next(), binaryIt.next())
+            }
+        }
+        val matrix = listOf(listOf(10, 9, 8, 5, 1), listOf(1, 5, 8, 9, 10), listOf(5), listOf(5, 6), listOf(6, 5))
+        for (list in matrix) {
             val treeSet = TreeSet<Int>()
             val binarySet = create()
             for (element in list) {
@@ -152,6 +188,35 @@ class BinaryTreeTest {
             assertEquals(treeSet.size, binarySet.size)
             for (element in list) {
                 val inn = element != toRemove
+                assertEquals(inn, element in binarySet,
+                        "$element should be ${if (inn) "in" else "not in"} tree")
+            }
+            assertTrue(binarySet.checkInvariant())
+        }
+        val matrix = listOf(listOf(10, 9, 8, 5, 1), listOf(10, 15, 5, 4, 6, 3, 7, 2, 8, 1, 9, 11, 16),
+                listOf(4, 7, 15, 10), listOf(40, 20, 30, 10), listOf(1, 2, 4, 8, 16), listOf(5, 10, 8, 12))
+        for (list in matrix) {
+            val treeSet = TreeSet<Int>()
+            val binarySet = create()
+            for (element in list) {
+                treeSet += element
+                binarySet += element
+            }
+            treeSet.remove(10)
+            println("Removing 10 from $list")
+            val iterator = binarySet.iterator()
+            while (iterator.hasNext()) {
+                val element = iterator.next()
+                print("$element ")
+                if (element == 10) {
+                    iterator.remove()
+                }
+            }
+            println()
+            assertEquals<SortedSet<*>>(treeSet, binarySet, "After removal of 10 from $list")
+            assertEquals(treeSet.size, binarySet.size)
+            for (element in list) {
+                val inn = element != 10
                 assertEquals(inn, element in binarySet,
                         "$element should be ${if (inn) "in" else "not in"} tree")
             }

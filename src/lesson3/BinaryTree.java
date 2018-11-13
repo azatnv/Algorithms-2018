@@ -73,7 +73,7 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         @SuppressWarnings("unchecked")
         T t = (T) o;
         Node<T> removed = find(t);
-        if (removed == null) return false;
+        if (removed == null || removed.value != t) return false;
         Node<T> right = removed.right;
         Node<T> left = removed.left;
         if (removed == root) {
@@ -119,6 +119,7 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         return find(root, value);
     }
 
+    //Трудоемкость T=O(N) - самый худший случай, ресурсоемкость R=O(1). Во всех остальных реализованных методах T и R такие же.
     private Node<T> find(Node<T> start, T value) {
         int comparison = value.compareTo(start.value);
         if (comparison == 0) {
@@ -258,8 +259,17 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
     @NotNull
     @Override
     public SortedSet<T> headSet(T toElement) {
-        // TODO
-        throw new NotImplementedError();
+        if (root == null) return new TreeSet<>();
+        SortedSet<T> treeSet = new TreeSet<>();
+        Iterator<T> iterator = this.iterator();
+        T next;
+        while (iterator.hasNext()) {
+            next = iterator.next();
+            if (next.compareTo(toElement) < 0) {
+                treeSet.add(next);
+            } else if (next.compareTo(toElement) >= 0) break;
+        }
+        return treeSet;
     }
 
     /**
