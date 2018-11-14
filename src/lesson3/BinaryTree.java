@@ -100,6 +100,10 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         return true;
     }
 
+    private void removeNode(Node<T> node) {
+        remove(node.value);
+    }
+
     private void rearrangeSmallerNodeToBiggerSubtree(Node<T> node, Node<T> subtree) {
         Node<T> closest = find(subtree, node.value);
         node.parent = closest;
@@ -119,7 +123,8 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         return find(root, value);
     }
 
-    //Трудоемкость T=O(N) - самый худший случай, ресурсоемкость R=O(1). Во всех остальных реализованных методах T и R такие же.
+    //Трудоемкость: G=O(N) - самый худший случай; G=O(logN) - в среднем случае.
+    //Ресурсоемкость R=O(1). Во всех остальных реализованных методах G и R такие же.
     private Node<T> find(Node<T> start, T value) {
         int comparison = value.compareTo(start.value);
         if (comparison == 0) {
@@ -197,29 +202,7 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         @Override
         public void remove() {
             if (current == null) throw new NoSuchElementException();
-            Node<T> right = current.right;
-            Node<T> left = current.left;
-            if (current == root) {
-                if (size == 1) root = null;
-                else {
-                    Node<T> moved = right != null ? right : left;
-                    moved.parent = null;
-                    root = moved;
-                    if (right != null && left != null) rearrangeSmallerNodeToBiggerSubtree(left, moved);
-                }
-            }
-            else if (right == null && left == null) {
-                if (current.parent.left == current) current.parent.left = null;
-                else current.parent.right = null;
-            }
-            else {
-                Node<T> moved = right != null ? right : left;
-                moved.parent = current.parent;
-                if (current.parent.left == current) current.parent.left = moved;
-                else current.parent.right = moved;
-                if (left != null && right != null) rearrangeSmallerNodeToBiggerSubtree(left, moved);
-            }
-            size--;
+            BinaryTree.this.removeNode(current);
         }
     }
 
@@ -259,17 +242,132 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
     @NotNull
     @Override
     public SortedSet<T> headSet(T toElement) {
-        if (root == null) return new TreeSet<>();
-        SortedSet<T> treeSet = new TreeSet<>();
-        Iterator<T> iterator = this.iterator();
-        T next;
-        while (iterator.hasNext()) {
-            next = iterator.next();
-            if (next.compareTo(toElement) < 0) {
-                treeSet.add(next);
-            } else if (next.compareTo(toElement) >= 0) break;
+        Integer element = (Integer) toElement;
+        return new ShellBinaryTree<>(this, element);
+    }
+
+    class ShellBinaryTree<G extends Comparable<G>> extends AbstractSet<G> implements SortedSet<G> {
+        private BinaryTree delegate;
+        private Integer bound;
+
+        ShellBinaryTree(BinaryTree binaryTree, Integer bound) {
+            this.delegate = binaryTree;
+            this.bound = bound;
         }
-        return treeSet;
+
+        @Override
+        public boolean add(G t) {
+            @SuppressWarnings("unchecked")
+            Integer element = (Integer) t;
+            if (element.compareTo(bound) < 0) {
+                return delegate.add(element);
+            }
+            return false;
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            @SuppressWarnings("unchecked")
+            Integer element = (Integer) o;
+            if (element.compareTo(bound) < 0) {
+                return delegate.remove(element);
+            }
+            return false;
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            @SuppressWarnings("unchecked")
+            Integer element = (Integer) o;
+            return element.compareTo(bound) < 0 && delegate.contains(o);
+        }
+
+        @Override
+        public int size() {
+            return (int) delegate.stream().filter(it -> (Integer) it < bound).count();
+        }
+
+        class ShellBinaryTreeIterator implements Iterator<G> {
+
+            private Iterator iterator = delegate.iterator();
+
+            private G next = null;
+
+            private ShellBinaryTreeIterator() {
+                while (iterator.hasNext()) {
+                    Integer nextElement = (Integer) iterator.next();
+                    if (nextElement.compareTo(bound) < 0) {
+                        this.next =  (G) nextElement;
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public boolean hasNext() {
+                return next != null;
+            }
+
+            @Override
+            public G next() {
+                G result;
+                if (next == null) throw new NoSuchElementException();
+                else result = next;
+                if (iterator.hasNext()) next = (G) iterator.next();
+                else next = null;
+                return result;
+            }
+
+            @Override
+            public void remove() {
+                iterator.remove();
+            }
+        }
+
+        @NotNull
+        @Override
+        public Iterator<G> iterator() {
+            return new ShellBinaryTreeIterator();
+        }
+
+        @Nullable
+        @Override
+        public Comparator<? super G> comparator() {
+            return null;
+        }
+
+        @NotNull
+        @Override
+        public SortedSet<G> subSet(G fromElement, G toElement) {
+            //TODO()
+            throw new NotImplementedError();
+        }
+
+        @NotNull
+        @Override
+        public SortedSet<G> headSet(G toElement) {
+            //TODO()
+            throw new NotImplementedError();
+        }
+
+        @NotNull
+        @Override
+        public SortedSet<G> tailSet(G fromElement) {
+            //TODO()
+            throw new NotImplementedError();
+        }
+
+        @Override
+        public G first() {
+            //TODO()
+            throw new NotImplementedError();
+        }
+
+        @Override
+        public G last() {
+            //TODO()
+            throw new NotImplementedError();
+        }
     }
 
     /**
