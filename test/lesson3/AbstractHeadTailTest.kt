@@ -75,6 +75,12 @@ abstract class AbstractHeadTailTest {
         assertFalse(set.contains(12))
         assertEquals(5, set.size)
         assertEquals(10, tree.size)
+        set.add(4)
+        set.add(6)
+        assertTrue(set.contains(4))
+        assertTrue(set.contains(6))
+        assertEquals(7, set.size)
+        assertEquals(12, tree.size)
     }
 
     protected fun doTailSetRelationTest() {
