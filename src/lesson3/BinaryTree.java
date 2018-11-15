@@ -123,8 +123,8 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         return find(root, value);
     }
 
-    //Трудоемкость: G=O(N) - самый худший случай; G=O(logN) - в среднем случае.
-    //Ресурсоемкость R=O(1). Во всех остальных реализованных методах G и R такие же.
+    //Трудоемкость: T=O(N) - самый худший случай; T=O(logN) - в среднем случае.
+    //Ресурсоемкость R=O(1). Во всех остальных реализованных методах T и R такие же.
     private Node<T> find(Node<T> start, T value) {
         int comparison = value.compareTo(start.value);
         if (comparison == 0) {
