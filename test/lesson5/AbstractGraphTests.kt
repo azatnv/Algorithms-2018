@@ -14,6 +14,7 @@ abstract class AbstractGraphTests {
         val edges = graph.edges
         if (shouldExist) {
             assertEquals(edges.size, size, "Euler loop should traverse all edges")
+            assertTrue(this[0].isNeighbour(this[size - 1]), "Edges ${this[0]} & ${this[size - 1]} are not incident")
         } else {
             assertTrue(isEmpty(), "Euler loop should not exist")
         }
@@ -23,7 +24,6 @@ abstract class AbstractGraphTests {
         for (i in 0 until size - 1) {
             assertTrue(this[i].isNeighbour(this[i + 1]), "Edges ${this[i]} & ${this[i + 1]} are not incident")
         }
-        assertTrue(this[0].isNeighbour(this[size - 1]), "Edges ${this[0]} & ${this[size - 1]} are not incident")
     }
 
     fun findEulerLoop(findEulerLoop: Graph.() -> List<Graph.Edge>) {
@@ -65,6 +65,27 @@ abstract class AbstractGraphTests {
         }.build()
         val loop2 = graph2.findEulerLoop()
         loop2.assert(true, graph2)
+        val graph3 = GraphBuilder().apply {
+            val a = addVertex("A")
+            val b = addVertex("B")
+            val c = addVertex("C")
+            val d = addVertex("D")
+            addConnection(a, b)
+            addConnection(a, c)
+            addConnection(a, d)
+            addConnection(b, c)
+            addConnection(b, d)
+            addConnection(c, d)
+        }.build()
+        val loop3 = graph3.findEulerLoop()
+        loop3.assert(false, graph3)
+        val graph4 = GraphBuilder().apply {
+            val a = addVertex("A")
+            val b = addVertex("B")
+            addConnection(a, b)
+        }.build()
+        val loop4 = graph4.findEulerLoop()
+        loop4.assert(false, graph4)
     }
 
     fun minimumSpanningTree(minimumSpanningTree: Graph.() -> Graph) {
@@ -177,6 +198,22 @@ abstract class AbstractGraphTests {
         }.build()
         val longestPath2 = graph2.longestSimplePath()
         assertEquals(10, longestPath2.length)
+
+        val graph3 = GraphBuilder().apply {
+            val b = addVertex("B")
+            val c = addVertex("C")
+            val d = addVertex("D")
+            val e = addVertex("E")
+            val a = addVertex("A")
+            addConnection(a, b)
+            addConnection(b, c)
+            addConnection(a, e)
+            addConnection(b, d)
+            addConnection(e, d)
+        }.build()
+        val longestPath3 = graph3.longestSimplePath()
+        assertEquals(4, longestPath3.length)
+
     }
 
 }
