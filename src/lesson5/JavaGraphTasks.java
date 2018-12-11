@@ -55,8 +55,8 @@ public class JavaGraphTasks {
             } else {
                 for (Graph.Vertex vertex : graph.getNeighbors(currentVertex)) {                    //T=O(V*E)
                     Graph.Edge edge = graph.getConnection(currentVertex, vertex); //O(E)
-                    if (edges.contains(edge)) {       //O(E)
-                        edges.remove(edge);           //O(E)
+                    if (edges.contains(edge)) {       //O(1)
+                        edges.remove(edge);           //O(1)
                         stack.push(vertex);
                         break;
                     }
